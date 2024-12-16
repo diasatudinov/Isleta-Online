@@ -8,12 +8,18 @@
 import SwiftUI
 
 struct ContentView: View {
+    @Environment(\.presentationMode) var presentationMode
     var body: some View {
         VStack {
             Image(systemName: "globe")
                 .imageScale(.large)
                 .foregroundStyle(.tint)
             Text("Hello, world!")
+            Button {
+                presentationMode.wrappedValue.dismiss()
+            } label: {
+                Text("Back")
+            }
         }
         .padding()
     }
