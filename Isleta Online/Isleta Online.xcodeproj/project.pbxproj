@@ -10,22 +10,9 @@
 		2B43A3C62D10450400EF9935 /* Isleta Online.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Isleta Online.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
-/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		2B43A3D82D10453000EF9935 /* Exceptions for "Isleta Online" folder in "Isleta Online" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				"Isleta-Online-Info.plist",
-			);
-			target = 2B43A3C52D10450400EF9935 /* Isleta Online */;
-		};
-/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
-
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		2B43A3C82D10450400EF9935 /* Isleta Online */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				2B43A3D82D10453000EF9935 /* Exceptions for "Isleta Online" folder in "Isleta Online" target */,
-			);
 			path = "Isleta Online";
 			sourceTree = "<group>";
 		};
