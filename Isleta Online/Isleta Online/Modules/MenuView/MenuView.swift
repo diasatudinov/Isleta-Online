@@ -19,6 +19,7 @@ struct MenuView: View {
     @StateObject var user = User.shared
       @StateObject var settingsVM = SettingsModel()
     @StateObject var shopVM = ShopViewModel()
+    @StateObject var teamVM = TeamViewModel()
     
     var body: some View {
         GeometryReader { geometry in
@@ -66,27 +67,29 @@ struct MenuView: View {
                                                 .textCase(.uppercase)
                                             HStack(spacing: DeviceInfo.shared.deviceType == .pad ? 100:50) {
                                                 Spacer()
-                                                HStack {
-                                                    Image(.team1Logo)
-                                                        .resizable()
-                                                        .scaledToFit()
-                                                        .frame(height: DeviceInfo.shared.deviceType == .pad ? 50:25)
-                                                    
-                                                    Text("Team Isleta")
-                                                        .font(.system(size: DeviceInfo.shared.deviceType == .pad ? 20:10, weight: .regular))
-                                                        .foregroundStyle(.white)
-                                                        .textCase(.uppercase)
-                                                }
-                                                HStack {
-                                                    Text("Score: 10")
-                                                        .font(.system(size: DeviceInfo.shared.deviceType == .pad ? 20:10, weight: .regular))
-                                                        .foregroundStyle(.white)
-                                                        .textCase(.uppercase)
-                                                    Image(.team1Logo)
-                                                        .resizable()
-                                                        .scaledToFit()
-                                                        .frame(height: DeviceInfo.shared.deviceType == .pad ? 50:25)
-                                                        .opacity(0)
+                                                if let currentTeam = teamVM.currentTeam {
+                                                    HStack {
+                                                        Image(currentTeam.icon)
+                                                            .resizable()
+                                                            .scaledToFit()
+                                                            .frame(height: DeviceInfo.shared.deviceType == .pad ? 50:25)
+                                                        
+                                                        Text(currentTeam.name)
+                                                            .font(.system(size: DeviceInfo.shared.deviceType == .pad ? 20:10, weight: .regular))
+                                                            .foregroundStyle(.white)
+                                                            .textCase(.uppercase)
+                                                    }
+                                                    HStack {
+                                                        Text("Score: \(currentTeam.score)")
+                                                            .font(.system(size: DeviceInfo.shared.deviceType == .pad ? 20:10, weight: .regular))
+                                                            .foregroundStyle(.white)
+                                                            .textCase(.uppercase)
+                                                        Image(.team1Logo)
+                                                            .resizable()
+                                                            .scaledToFit()
+                                                            .frame(height: DeviceInfo.shared.deviceType == .pad ? 50:25)
+                                                            .opacity(0)
+                                                    }
                                                 }
                                                 Spacer()
                                             }
@@ -164,27 +167,29 @@ struct MenuView: View {
                                                 .textCase(.uppercase)
                                             HStack(spacing: DeviceInfo.shared.deviceType == .pad ? 140:70) {
                                                 Spacer()
-                                                HStack {
-                                                    Image(.team1Logo)
-                                                        .resizable()
-                                                        .scaledToFit()
-                                                        .frame(height: DeviceInfo.shared.deviceType == .pad ? 70:35)
-                                                    
-                                                    Text("Team Isleta")
-                                                        .font(.system(size: DeviceInfo.shared.deviceType == .pad ? 28:14, weight: .regular))
-                                                        .foregroundStyle(.white)
-                                                        .textCase(.uppercase)
-                                                }
-                                                HStack {
-                                                    Text("Score: 10")
-                                                        .font(.system(size: DeviceInfo.shared.deviceType == .pad ? 28:14, weight: .regular))
-                                                        .foregroundStyle(.white)
-                                                        .textCase(.uppercase)
-                                                    Image(.team1Logo)
-                                                        .resizable()
-                                                        .scaledToFit()
-                                                        .frame(height: DeviceInfo.shared.deviceType == .pad ? 70:35)
-                                                        .opacity(0)
+                                                if let currentTeam = teamVM.currentTeam {
+                                                    HStack {
+                                                        Image(currentTeam.icon)
+                                                            .resizable()
+                                                            .scaledToFit()
+                                                            .frame(height: DeviceInfo.shared.deviceType == .pad ? 70:35)
+                                                        
+                                                        Text(currentTeam.name)
+                                                            .font(.system(size: DeviceInfo.shared.deviceType == .pad ? 28:14, weight: .regular))
+                                                            .foregroundStyle(.white)
+                                                            .textCase(.uppercase)
+                                                    }
+                                                    HStack {
+                                                        Text("Score: \(currentTeam.score)")
+                                                            .font(.system(size: DeviceInfo.shared.deviceType == .pad ? 28:14, weight: .regular))
+                                                            .foregroundStyle(.white)
+                                                            .textCase(.uppercase)
+                                                        Image(.team1Logo)
+                                                            .resizable()
+                                                            .scaledToFit()
+                                                            .frame(height: DeviceInfo.shared.deviceType == .pad ? 70:35)
+                                                            .opacity(0)
+                                                    }
                                                 }
                                                 Spacer()
                                             }
@@ -243,7 +248,7 @@ struct MenuView: View {
                 
             )
             .fullScreenCover(isPresented: $showTeam) {
-                ContentView()
+                TeamView(viewModel: teamVM)
             }
             .fullScreenCover(isPresented: $showGame) {
                 ContentView()
