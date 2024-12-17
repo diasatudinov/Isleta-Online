@@ -46,8 +46,13 @@ struct ShopView: View {
                     
                 
             }.padding([.top,.horizontal], 20)
-
-                itemView(image: .magnet, header: "asdad", text: "asdasd", isOpen: true)
+                HStack {
+                    itemView(image: .magnet, header: "magnet", isOpen: true)
+                    
+                    itemView(image: .acceleration, header: "Acceleration", isOpen: true)
+                    
+                    itemView(image: .shield, header: "shield", isOpen: true)
+                }
                 Spacer()
             }
             
@@ -60,7 +65,7 @@ struct ShopView: View {
         )
     }
     
-    @ViewBuilder func itemView(image: ImageResource, header: String, text: String, isOpen: Bool) -> some View {
+    @ViewBuilder func itemView(image: ImageResource, header: String, isOpen: Bool) -> some View {
         
         
         ZStack {
@@ -69,26 +74,39 @@ struct ShopView: View {
                 .resizable()
                 .scaledToFit()
             
-            VStack(alignment: .center, spacing: 0) {
+            VStack(alignment: .center, spacing: 15) {
                 
                 Image(image)
                     .resizable()
                     .foregroundColor(.black)
                     .scaledToFit()
                     .frame(height: DeviceInfo.shared.deviceType == .pad ? 160 : 80)
-                    .padding(.bottom, 30)
+                    
                 
                 Text(header)
-                    .font(.system(size: DeviceInfo.shared.deviceType == .pad ? 50:20, weight: .bold))
-                    .foregroundColor(.blue)
-                    .padding(.bottom, 8)
-                Text(text)
-                    .font(.system(size: DeviceInfo.shared.deviceType == .pad ? 46:13))
+                    .font(.system(size: DeviceInfo.shared.deviceType == .pad ? 40:20, weight: .bold))
                     .foregroundColor(.white)
-                    .multilineTextAlignment(.center)
+                    .textCase(.uppercase)
+                Button {
+                    
+                    switch image {
+                    case .magnet: print("magnet")
+                    case .acceleration: print("acceleration")
+                    case .shield: print("shield")
+                    default:
+                        print("error")
+                    }
+                    
+                } label: {
+                    Image(user.coins < 50 ? .shopBtnRed : .shopBtn)
+                        .resizable()
+                        .foregroundColor(.black)
+                        .scaledToFit()
+                        .frame(height: DeviceInfo.shared.deviceType == .pad ? 80 : 50)
+                }
                 
             }
-        }.frame(height: 270)
+        }.frame(height: DeviceInfo.shared.deviceType == .pad ? 450:270)
     }
 }
 

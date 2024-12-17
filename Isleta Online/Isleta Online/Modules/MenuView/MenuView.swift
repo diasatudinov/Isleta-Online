@@ -9,16 +9,16 @@ import SwiftUI
 
 struct MenuView: View {
     @Environment(\.presentationMode) var presentationMode
-    @State private var showTrainGame = false
-    @State private var showSequenceGame = false
-    @State private var showGetCard = false
-    @State private var showCollections = false
+    @State private var showTeam = false
+    @State private var showGame = false
+    @State private var showShop = false
+    @State private var showRules = false
     @State private var showSettings = false
     
     
     @StateObject var user = User.shared
-//      @StateObject var settingsVM = SettingsModel()
-//    @StateObject var collectionVM = CollectionViewModel()
+      @StateObject var settingsVM = SettingsModel()
+    @StateObject var shopVM = ShopViewModel()
     
     var body: some View {
         GeometryReader { geometry in
@@ -32,17 +32,6 @@ struct MenuView: View {
                         VStack {
                             HStack(spacing: 5){
                                 Spacer()
-                                ZStack {
-//                                    Image(.coinBg)
-//                                        .resizable()
-//                                        .scaledToFit()
-                                    
-//                                    Image(.coin)
-//                                        .resizable()
-//                                        .scaledToFit()
-//                                        .frame(height: DeviceInfo.shared.deviceType == .pad ?60:30)
-                                    
-                                }.frame(height: DeviceInfo.shared.deviceType == .pad ? 100 : 55)
                               
                                 ZStack {
                                     Image(.coinsBg)
@@ -63,7 +52,7 @@ struct MenuView: View {
                             Spacer()
                             VStack(spacing: 25) {
                                 Button {
-                                    
+                                    showTeam = true
                                 } label: {
                                     ZStack {
                                         Image(.teamBg)
@@ -106,20 +95,20 @@ struct MenuView: View {
                                 }
                                 
                                 Button {
-                                    showTrainGame = true
+                                    showGame = true
                                 } label: {
                                     TextBg(height: DeviceInfo.shared.deviceType == .pad ? 150 : 75, text: "Let's fly", textSize: DeviceInfo.shared.deviceType == .pad ? 40 : 24)
                                 }
                                 
                                 
                                 Button {
-                                    showSequenceGame = true
+                                    showShop = true
                                 } label: {
                                     TextBg(height: DeviceInfo.shared.deviceType == .pad ? 150 : 75, text: "Shop", textSize: DeviceInfo.shared.deviceType == .pad ? 40 : 24)
                                 }
                                 
                                 Button {
-                                    showGetCard = true
+                                    showRules = true
                                 } label: {
                                     TextBg(height: DeviceInfo.shared.deviceType == .pad ? 150 : 75, text: "How to play?", textSize: DeviceInfo.shared.deviceType == .pad ? 40 : 24)
                                 }
@@ -140,18 +129,6 @@ struct MenuView: View {
                         VStack {
                             HStack(spacing: 5){
                                 Spacer()
-//                                ZStack {
-//                                    Image(.coinBg)
-//                                        .resizable()
-//                                        .scaledToFit()
-//                                    
-//                                    Image(.coin)
-//                                        .resizable()
-//                                        .scaledToFit()
-//                                        .frame(height: DeviceInfo.shared.deviceType == .pad ? 60 : 30)
-//                                    
-//                                }.frame(height: DeviceInfo.shared.deviceType == .pad ? 100 :55)
-                                
                                 ZStack {
                                     Image(.coinsBg)
                                         .resizable()
@@ -173,7 +150,7 @@ struct MenuView: View {
                             VStack(spacing: 0) {
                                 Spacer()
                                 Button {
-                                    
+                                    showTeam = true
                                 } label: {
                                     ZStack {
                                         Image(.teamBg)
@@ -217,14 +194,16 @@ struct MenuView: View {
                                 HStack(spacing: 5) {
                                     Spacer()
                                     Button {
-                                        showTrainGame = true
+                                        
+                                        showGame = true
                                     } label: {
                                         TextBg(height: DeviceInfo.shared.deviceType == .pad ? 150 : 75, text: "Let's fly", textSize: DeviceInfo.shared.deviceType == .pad ? 40 : 24)
                                     }
                                     
                                     
                                     Button {
-                                        showSequenceGame = true
+                                        
+                                        showShop = true
                                     } label: {
                                         TextBg(height: DeviceInfo.shared.deviceType == .pad ? 150 : 75, text: "Shop", textSize: DeviceInfo.shared.deviceType == .pad ? 40 : 24)
                                     }
@@ -234,7 +213,7 @@ struct MenuView: View {
                                 HStack(spacing: 5) {
                                     Spacer()
                                     Button {
-                                        showGetCard = true
+                                        showRules = true
                                     } label: {
                                         TextBg(height: DeviceInfo.shared.deviceType == .pad ? 150 : 75, text: "How to play?", textSize: DeviceInfo.shared.deviceType == .pad ? 40 : 24)
                                     }
@@ -263,37 +242,21 @@ struct MenuView: View {
                     .scaledToFill()
                 
             )
-//            .onAppear {
-//                if settingsVM.musicEnabled {
-//                    MusicPlayer.shared.playBackgroundMusic()
-//                }
-//            }
-//            .onChange(of: settingsVM.musicEnabled) { enabled in
-//                if enabled {
-//                    MusicPlayer.shared.playBackgroundMusic()
-//                } else {
-//                    MusicPlayer.shared.stopBackgroundMusic()
-//                }
-//            }
-            .fullScreenCover(isPresented: $showTrainGame) {
-               // TrainGameView(settingsVM: settingsVM)
+            .fullScreenCover(isPresented: $showTeam) {
                 ContentView()
             }
-            .fullScreenCover(isPresented: $showSequenceGame) {
-                //SequenceGameView(settingsVM: settingsVM)
+            .fullScreenCover(isPresented: $showGame) {
                 ContentView()
             }
-            .fullScreenCover(isPresented: $showGetCard) {
-                //GetCardView(collectionVM: collectionVM)
-                ContentView()
+            .fullScreenCover(isPresented: $showShop) {
+                ShopView(viewModel: shopVM)
             }
-            .fullScreenCover(isPresented: $showCollections) {
-                //CollectionView(collectionVM: collectionVM)
+            .fullScreenCover(isPresented: $showRules) {
                 ContentView()
             }
             .fullScreenCover(isPresented: $showSettings) {
-                //SettingsView(settings: settingsVM)
-                ContentView()
+                SettingsView(settings: settingsVM)
+                
             }
             
         }
