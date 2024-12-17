@@ -252,7 +252,7 @@ struct MenuView: View {
                 ShopView(viewModel: shopVM)
             }
             .fullScreenCover(isPresented: $showRules) {
-                ContentView()
+                RulesView()
             }
             .fullScreenCover(isPresented: $showSettings) {
                 SettingsView(settings: settingsVM)
