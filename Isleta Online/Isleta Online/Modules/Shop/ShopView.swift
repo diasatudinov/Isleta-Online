@@ -47,11 +47,12 @@ struct ShopView: View {
                 
             }.padding([.top,.horizontal], 20)
                 HStack {
-                    itemView(image: .magnet, header: "magnet", isOpen: true)
                     
-                    itemView(image: .acceleration, header: "Acceleration", isOpen: true)
+                    ForEach(viewModel.bonuses, id: \.self) { bonus in
+                        itemView(image: bonus.icon, header: bonus.name, isPurchased: bonus.purchased, bonus: bonus)
+                    }
                     
-                    itemView(image: .shield, header: "shield", isOpen: true)
+                    
                 }
                 Spacer()
             }
@@ -65,7 +66,7 @@ struct ShopView: View {
         )
     }
     
-    @ViewBuilder func itemView(image: ImageResource, header: String, isOpen: Bool) -> some View {
+    @ViewBuilder func itemView(image: String, header: String, isPurchased: Bool, bonus: Bonus) -> some View {
         
         
         ZStack {
@@ -88,17 +89,12 @@ struct ShopView: View {
                     .foregroundColor(.white)
                     .textCase(.uppercase)
                 Button {
-                    
-                    switch image {
-                    case .magnet: print("magnet")
-                    case .acceleration: print("acceleration")
-                    case .shield: print("shield")
-                    default:
-                        print("error")
+                    if !isPurchased {
+                        viewModel.purchaseBonus(bonus: bonus)
+                        user.minusUserCoins(for: 50)
                     }
-                    
                 } label: {
-                    Image(user.coins < 50 ? .shopBtnRed : .shopBtn)
+                    Image(isPurchased ? .shopBtnGreen : user.coins < 50 ? .shopBtnRed : .shopBtn)
                         .resizable()
                         .foregroundColor(.black)
                         .scaledToFit()
