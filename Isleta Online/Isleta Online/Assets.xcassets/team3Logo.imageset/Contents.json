@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "team3Logo.png",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}
