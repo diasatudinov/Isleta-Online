@@ -90,8 +90,10 @@ struct ShopView: View {
                     .textCase(.uppercase)
                 Button {
                     if !isPurchased {
-                        viewModel.purchaseBonus(bonus: bonus)
-                        user.minusUserCoins(for: 50)
+                        if user.coins > 50 {
+                            viewModel.purchaseBonus(bonus: bonus)
+                            user.minusUserCoins(for: 50)
+                        }
                     }
                 } label: {
                     Image(isPurchased ? .shopBtnGreen : user.coins < 50 ? .shopBtnRed : .shopBtn)
