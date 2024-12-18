@@ -251,7 +251,7 @@ struct MenuView: View {
                 TeamView(viewModel: teamVM)
             }
             .fullScreenCover(isPresented: $showGame) {
-                ContentView()
+                GameView()
             }
             .fullScreenCover(isPresented: $showShop) {
                 ShopView(viewModel: shopVM)
