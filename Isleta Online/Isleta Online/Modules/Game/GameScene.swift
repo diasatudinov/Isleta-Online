@@ -1,194 +1,217 @@
+//
+//  GameScene.swift
+//  Isleta Online
+//
+//  Created by Dias Atudinov on 18.12.2024.
+//
+
+
 import Foundation
 import SpriteKit
 
+protocol GameSceneDelegate: AnyObject {
+    func restart()
+    func pause()
+    func resume()
+}
+
 class GameScene: SKScene, SKPhysicsContactDelegate {
-    let settingsVM = SettingsModel()
-    var currentValueUpdateHandler: ((_ name: String) -> Void)?
-    var finished3rdLevel: ((_ mistakeDone: Bool) -> Void)?
+    private var eagle: SKSpriteNode!
+    private var activePowerUpLabel: SKLabelNode!
     
-    private var basket: SKSpriteNode!
-    private var sequence: [String] = [] // Хранит текущую последовательность
-    private var currentSequenceIndex = 0
+    private var score = 0
+    private var coins = 0
     private var isGameOver = false
-    private var currentLevel = 1
-    private var fallDuration = 5.0
-    private var mistakeDone = false
     
-    override func didMove(to view: SKView) {
-        setupScene()
-        startLevel(currentLevel)
+    var coinsUpdateHandler: (() -> Void)?
+    var starsUpdateHandler: (() -> Void)?
+    var gameOverHandler: (() -> Void)?
+    var bonusResetHandler: (() -> Void)?
+    
+    private var activePowerUp: String? {
+        didSet {
+            if let powerUp = activePowerUp {
+                activePowerUpLabel.text = "Power-Up: \(powerUp)"
+                run(SKAction.sequence([
+                    SKAction.wait(forDuration: 6.0),
+                    SKAction.run { [weak self] in
+                        self?.activePowerUp = nil
+                    }
+                ]))
+            } else {
+                activePowerUpLabel.text = ""
+            }
+        }
     }
-    
+
+    override func didMove(to view: SKView) {
+        physicsWorld.contactDelegate = self
+        setupScene()
+        startSpawning()
+    }
+
     private func setupScene() {
-        // Добавляем фон
         backgroundColor = .clear
         
-        // Добавляем корзину
-        //basket = SKSpriteNode(color: .brown, size: CGSize(width: 100, height: 50))
-        let newTexture =  SKSpriteNode(imageNamed: "basket")
-        basket = SKSpriteNode(imageNamed: "basket")
-        
-        // Rescale the node to match the new texture while maintaining its current size
-        let aspectRatio = newTexture.size.width / newTexture.size.height
-        let newHeight = 50.0
-        let newWidth = newHeight * aspectRatio
-        basket.size = CGSize(width: newWidth, height: newHeight)
-        
-        basket.position = CGPoint(x: UIScreen.main.bounds.width / 2, y: 75)
-        addChild(basket)
-        
-        // Добавляем управление
-        let panGesture = UIPanGestureRecognizer(target: self, action: #selector(handlePanGesture(_:)))
-        self.view?.addGestureRecognizer(panGesture)
-        
-        mistakeDone = false
+        // Setup eagle
+        eagle = SKSpriteNode(imageNamed: "Eagle")
+        eagle.size = CGSize(width: 150, height: 40)
+        eagle.position = CGPoint(x: eagle.size.width, y: UIScreen.main.bounds.height / 2)
+        eagle.physicsBody = SKPhysicsBody(rectangleOf: eagle.size)
+        eagle.physicsBody?.affectedByGravity = false 
+        eagle.physicsBody?.isDynamic = true
+        eagle.physicsBody?.categoryBitMask = 1
+        eagle.physicsBody?.collisionBitMask = 0
+        eagle.physicsBody?.contactTestBitMask = 2 | 4 // Coins and obstacles
+        addChild(eagle)
+
+        activePowerUpLabel = createLabel(position: CGPoint(x: UIScreen.main.bounds.width / 2, y: UIScreen.main.bounds.height - 40), text: "")
+
+        addChild(activePowerUpLabel)
+
     }
-    
-    private func startLevel(_ level: Int) {
-        print("Starting Level \(level)")
 
-        // Set the sequence based on the level
-        switch level {
-        case 1:
-            sequence = ["1", "2", "3", "4", "5"]
-        case 2:
-            sequence = ["A", "B", "C", "D", "E"]
-        case 3:
-            sequence = ["1", "A", "2", "B", "3", "C", "4", "D", "5", "E"]
-        default:
-            sequence = ["1", "2", "3", "4", "5", "A", "B", "C", "D", "E"] // Default sequence for higher levels
+    private func startSpawning() {
+        let spawnAction = SKAction.run { [weak self] in
+            self?.spawnItem()
         }
-
-        // Reset sequence progress
-        currentSequenceIndex = 0
-
-        // Increase the speed of falling stars
-        fallDuration = max(1.0, fallDuration - 0.5) // Reduce duration with a minimum cap
-
-        // Start spawning stars if not already running
-        if !isGameOver {
-            spawnStars()
-        }
-        currentValueUpdateHandler?("-")
-        showLevelBanner(level)
-        if level == 4 {
-            print(mistakeDone)
-            finished3rdLevel?(mistakeDone)
-        }
+        let waitAction = SKAction.wait(forDuration: 1.0)
+        let sequence = SKAction.sequence([spawnAction, waitAction])
+        run(SKAction.repeatForever(sequence))
     }
-    
-    private func spawnStars() {
-        let spawnAction = SKAction.run {
-            guard !self.isGameOver else { return }
-            self.createStar()
-        }
-        let waitAction = SKAction.wait(forDuration: 1.0) // Time between stars
-        let sequenceAction = SKAction.sequence([spawnAction, waitAction])
-        run(SKAction.repeatForever(sequenceAction), withKey: "spawningStars")
-    }
-    
-    private func createStar() {
-        // Выбираем случайное значение из возможных для текущего уровня
-        guard let randomValue = sequence.randomElement() else { return }
 
-        // Создаем спрайт звезды
-        let star = SKSpriteNode(imageNamed: "whiteStar")
-        star.size = CGSize(width: 60, height: 60)
-        star.name = randomValue
-        star.position = CGPoint(x: CGFloat.random(in: 40...(size.width - 40)), y: size.height)
-
-        // Добавляем метку (значение звезды)
-        let label = SKLabelNode(text: randomValue)
-        label.fontName = Fonts.tiltWarp.rawValue
-        label.fontSize = 16
-        label.fontColor = .mainBlue
-        label.verticalAlignmentMode = .center
-        label.zPosition = 1
-        star.addChild(label)
-
-        // Добавляем звезду на сцену
-        addChild(star)
-
-        // Анимация падения
-        let fallAction = SKAction.moveTo(y: 0, duration: fallDuration)
-        let removeAction = SKAction.removeFromParent()
-        star.run(SKAction.sequence([fallAction, removeAction]))
-    }
-    
-    override func update(_ currentTime: TimeInterval) {
-        // Проверяем пересечение звезд и корзины
-        for star in children where star is SKSpriteNode && star.name != nil {
-            if star.frame.intersects(basket.frame) {
-                handleCollectedStar(star as! SKSpriteNode)
+    private func spawnItem() {
+        guard !isGameOver else { return }
+        
+        let isBonus = Bool.random()
+        let item: SKSpriteNode
+        let cloudNumber = Int.random(in: 1...4)
+        let bonusNum = Int.random(in: 1...2)
+        if isBonus {
+            item = SKSpriteNode(imageNamed: bonusNum == 1 ? "coin" : "star")
+            if bonusNum == 1 {
+                item.name = "coin"
+            } else {
+                item.name = "star"
             }
-        }
-    }
-    
-    private func handleCollectedStar(_ star: SKSpriteNode) {
-        guard let starName = star.name else { return }
-        
-        if starName == sequence[safe: currentSequenceIndex] {
-            if settingsVM.soundEnabled {
-                playSound(named: "takeStar.mp3")
-            }
-            currentValueUpdateHandler?(starName)
-            currentSequenceIndex += 1
-            if currentSequenceIndex >= sequence.count {
-                // Уровень завершен
-                currentLevel += 1
-                print("Level \(currentLevel - 1) Complete!")
-                startLevel(currentLevel) // Переход к следующему уровню
-            }
+            
+            item.size = CGSize(width: 40, height: 40)
+            item.physicsBody?.categoryBitMask = 2
         } else {
-            // Игрок выбрал неправильную звезду
-            if settingsVM.soundEnabled {
-                playSound(named: "incorrectStar.mp3")
+           
+            item = SKSpriteNode(imageNamed: "cloud\(cloudNumber)")
+            item.name = "obstacle"
+            if cloudNumber > 1 && cloudNumber < 4 && item.name == "obstacle" {
+                item.size = CGSize(width: 72, height: 130)
+            } else if cloudNumber == 1 && item.name == "obstacle" {
+                item.size = CGSize(width: 72, height: 46)
+            } else if cloudNumber == 4 && item.name == "obstacle" {
+                item.size = CGSize(width: 114, height: 46)
             }
-            mistakeDone = true
-            currentValueUpdateHandler?("-")
-            print("Wrong star collected!")
-            currentSequenceIndex = 0 // Сброс последовательности
+            
+            item.physicsBody?.categoryBitMask = 4
         }
+        if cloudNumber > 1 && cloudNumber < 4 && item.name == "obstacle" {
+            item.position = CGPoint(x: size.width + item.size.width / 2, y: item.size.height / 8)
+        } else {
+            item.position = CGPoint(x: size.width + item.size.width / 2, y: CGFloat.random(in: 100...(size.height - 100)))
+        }
+        item.physicsBody = SKPhysicsBody(rectangleOf: item.size)
+        item.physicsBody?.isDynamic = false
+        addChild(item)
 
-        star.removeFromParent()
+        // Move the item across the screen
+        let moveAction = SKAction.moveTo(x: -item.size.width, duration: 5.0)
+        let removeAction = SKAction.removeFromParent()
+        item.run(SKAction.sequence([moveAction, removeAction]))
     }
-    
-    private func showLevelBanner(_ level: Int) {
-        if settingsVM.soundEnabled {
-            playSound(named: "newLevel.mp3")
-        }
-        let banner = SKLabelNode(text: "Level \(level)")
-        banner.fontName = "AvenirNext-Bold"
-        banner.fontSize = 40
-        banner.fontColor = .white
-        banner.position = CGPoint(x: UIScreen.main.bounds.width / 2, y: UIScreen.main.bounds.height / 2)
-        banner.zPosition = 10
-        addChild(banner)
 
-        let fadeOut = SKAction.fadeOut(withDuration: 2.0)
-        banner.run(fadeOut) {
-            banner.removeFromParent()
-        }
-    }
-    
-    @objc private func handlePanGesture(_ gesture: UIPanGestureRecognizer) {
-        let translation = gesture.translation(in: self.view)
-        gesture.setTranslation(.zero, in: self.view)
-        
-        let newPositionX = basket.position.x + translation.x
-        basket.position.x = max(min(newPositionX, size.width - basket.size.width / 2), basket.size.width / 2)
-    }
-    
-    func playSound(named name: String) {
-        run(SKAction.playSoundFileNamed(name, waitForCompletion: false))
+    override func update(_ currentTime: TimeInterval) {
+        guard !isGameOver else { return }
         
     }
+
+//    @objc private func handleSwipe(_ gesture: UISwipeGestureRecognizer) {
+//        guard !isGameOver else { return }
+//        let moveAction: SKAction
+//        if gesture.direction == .up {
+//            moveAction = SKAction.moveBy(x: 0, y: 100, duration: 0.2)
+//        } else {
+//            moveAction = SKAction.moveBy(x: 0, y: -100, duration: 0.2)
+//        }
+//        eagle.run(moveAction)
+//    }
     
+    override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
+        guard !isGameOver else { return }
+        if let touch = touches.first {
+            let location = touch.location(in: self)
+            eagle.position.y = location.y
+        }
+    }
+
+    func didBegin(_ contact: SKPhysicsContact) {
+        guard let nodeA = contact.bodyA.node, let nodeB = contact.bodyB.node else { return }
+        let nodes = [nodeA, nodeB]
+
+        if nodes.contains(where: { $0.name == "coin" }) {
+            // Collect a coin
+            coinsUpdateHandler?()
+            nodes.first(where: { $0.name == "coin" })?.removeFromParent()
+        } else if nodes.contains(where: { $0.name == "star" }) {
+            starsUpdateHandler?()
+            nodes.first(where: { $0.name == "star" })?.removeFromParent()
+        } else if nodes.contains(where: { $0.name == "obstacle" }) {
+            // Hit an obstacle
+            endGame()
+        }
+    }
+
+    private func endGame() {
+        self.isPaused = true
+        gameOverHandler?()
+        removeAllActions()
+        eagle.removeFromParent()
+        let gameOverLabel = createLabel(position: CGPoint(x: size.width / 2, y: size.height / 2), text: "Game Over")
+        addChild(gameOverLabel)
+    }
+
+    private func createLabel(position: CGPoint, text: String) -> SKLabelNode {
+        let label = SKLabelNode(fontNamed: "AvenirNext-Bold")
+        label.fontSize = 20
+        label.fontColor = .white
+        label.position = position
+        label.text = text
+        return label
+    }
+    
+    func restartGame() {
+        self.removeAllChildren()
+        self.isPaused = false
+        isGameOver = false
+        setupScene()
+        startSpawning()
+    }
 }
 
 // Helper для безопасного доступа к массиву
 extension Array {
     subscript(safe index: Int) -> Element? {
         return indices.contains(index) ? self[index] : nil
+    }
+}
+
+extension GameScene: GameSceneDelegate {
+    func pause() {
+        self.isPaused = true
+    }
+    
+    func resume() {
+        self.isPaused = false
+    }
+    
+    func restart() {
+        print("restart")
+        restartGame()
     }
 }

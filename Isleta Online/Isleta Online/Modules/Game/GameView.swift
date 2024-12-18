@@ -1,44 +1,72 @@
+//
+//  GameView.swift
+//  Isleta Online
+//
+//  Created by Dias Atudinov on 18.12.2024.
+//
+
+
 import SwiftUI
 import SpriteKit
 
 struct GameView: View {
     @Environment(\.presentationMode) var presentationMode
-    @ObservedObject var achievements: AchievementsViewModel
     @State var valueName = "-"
     @State var achivement1 = false
+    @State var coinsCount = 0
+    @State var starsCount = 0
+    
+    @State var handler: GameSceneDelegate?
+    let skView = SKView()
+    @State var gameScene = GameScene(size: SKView().bounds.size)
+    
+    @State private var gameOver = false
+    @State private var isPause = false
+    
     var body: some View {
         GeometryReader { geometry in
             ZStack {
-                GameSceneView(valueName: $valueName, achivement1: $achivement1).ignoresSafeArea()
+                GameSceneView(coinsCount: $coinsCount, starsCount: $starsCount, skView: skView, gameScene: gameScene, gameOver: $gameOver).ignoresSafeArea()
                 
                 VStack {
                     ZStack {
                         HStack {
                             Spacer()
-                            ZStack {
-                                Image(.quizVariant)
-                                    .resizable()
-                                    .scaledToFit()
-                                    .frame(height: 75)
+                            
+                            VStack(spacing: 0) {
                                 
-                                VStack(spacing: -7) {
-                                    Text("NOW")
-                                        .font(.custom(Fonts.tiltWarp.rawValue, size: 15))
+                                ZStack {
+                                    Image(.gameCoinBg)
+                                        .resizable()
+                                        .scaledToFit()
+                                        .frame(height: 50)
+                                    
+                                    Text("\(coinsCount)")
+                                        .font(.system(size: DeviceInfo.shared.deviceType == .pad ? 40:20, weight: .black))
                                         .foregroundStyle(.white)
-                                    Text(valueName)
-                                        .font(.custom(Fonts.tiltWarp.rawValue, size: 32))
-                                        .foregroundStyle(.white)
+                                        .textCase(.uppercase)
                                 }
-                            }.frame(height: 75)
-                                .padding()
-                            Spacer()
+                                
+                                ZStack {
+                                    Image(.gameStarBg)
+                                        .resizable()
+                                        .scaledToFit()
+                                        .frame(height: 50)
+                                    
+                                    Text("\(starsCount)")
+                                        .font(.system(size: DeviceInfo.shared.deviceType == .pad ? 40:20, weight: .black))
+                                        .foregroundStyle(.white)
+                                        .textCase(.uppercase)
+                                }
+                            }.padding()
                         }
                         
                         HStack {
                             Button {
-                                presentationMode.wrappedValue.dismiss()
+                                isPause = true
+                                handler?.pause()
                             } label: {
-                                Image(.backBtn)
+                                Image(.pause)
                                     .resizable()
                                     .scaledToFit()
                                     .frame(height: DeviceInfo.shared.deviceType == .pad ? 75 : 50)
@@ -49,24 +77,97 @@ struct GameView: View {
                     Spacer()
                 }
                 
+                if isPause {
+                    ZStack {
+                        Image(.pauseBg)
+                            .resizable()
+                            .scaledToFit()
+                            
+                        VStack {
+                            Button {
+                                handler?.resume()
+                                isPause = false
+                            } label: {
+                                TextBg(height: 60, text: "Resume", textSize: 20)
+                            }
+                            
+                            Button {
+                                presentationMode.wrappedValue.dismiss()
+                            } label: {
+                                TextBg(height: 60, text: "Menu", textSize: 20)
+                            }
+                        }
+                    }.frame(height: 262)
+                }
+                
+                if gameOver {
+                    ZStack {
+                        Image(.overBg)
+                            .resizable()
+                            .scaledToFit()
+                            
+                        VStack(spacing: 0) {
+                            VStack(spacing: 0) {
+                                
+                                ZStack {
+                                    Image(.gameCoinBg)
+                                        .resizable()
+                                        .scaledToFit()
+                                        .frame(height: 50)
+                                    
+                                    Text("+\(coinsCount)")
+                                        .font(.system(size: DeviceInfo.shared.deviceType == .pad ? 40:20, weight: .black))
+                                        .foregroundStyle(.white)
+                                        .textCase(.uppercase)
+                                }
+                                
+                                ZStack {
+                                    Image(.gameStarBg)
+                                        .resizable()
+                                        .scaledToFit()
+                                        .frame(height: 50)
+                                    
+                                    Text("+\(starsCount)")
+                                        .font(.system(size: DeviceInfo.shared.deviceType == .pad ? 40:20, weight: .black))
+                                        .foregroundStyle(.white)
+                                        .textCase(.uppercase)
+                                }
+                            }
+                            Button {
+                                handler?.restart()
+                                starsCount = 0
+                                coinsCount = 0
+                                gameOver = false
+                            } label: {
+                                TextBg(height: 60, text: "Retry", textSize: 20)
+                            }
+                            
+                            Button {
+                                presentationMode.wrappedValue.dismiss()
+                            } label: {
+                                TextBg(height: 60, text: "Menu", textSize: 20)
+                            }
+                        }
+                    }.frame(height: 340)
+                }
+                
             }
             .background(
-                Image(.background)
+                Image(.gameBg)
                     .resizable()
                     .edgesIgnoringSafeArea(.all)
                     .scaledToFill()
             )
-            .onChange(of: achivement1) { newValue in
-                if newValue {
-                    achievements.achievementOneDone()
-                }
+            .onAppear {
+                    self.handler = gameScene
                 
             }
+            
             
         }
     }
 }
 
 #Preview {
-    GameView(achievements: AchievementsViewModel())
+    GameView()
 }
