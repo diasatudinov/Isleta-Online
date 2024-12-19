@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import StoreKit
 
 struct SettingsView: View {
     @StateObject var user = User.shared
@@ -114,7 +115,7 @@ struct SettingsView: View {
                         }.padding(.bottom, 10)
                        
                         Button {
-                            
+                            rateUs()
                         } label: {
                             ZStack {
                                 Image(.textBg)
@@ -140,6 +141,12 @@ struct SettingsView: View {
                 .scaledToFill()
             
         )
+    }
+    
+    func rateUs() {
+        if let scene = UIApplication.shared.connectedScenes.first(where: { $0.activationState == .foregroundActive }) as? UIWindowScene {
+            SKStoreReviewController.requestReview(in: scene)
+        }
     }
 }
 

@@ -247,11 +247,23 @@ struct MenuView: View {
                     .scaledToFill()
                 
             )
+            .onAppear {
+                if settingsVM.musicEnabled {
+                    MusicPlayer.shared.playBackgroundMusic()
+                }
+            }
+            .onChange(of: settingsVM.musicEnabled) { enabled in
+                if enabled {
+                    MusicPlayer.shared.playBackgroundMusic()
+                } else {
+                    MusicPlayer.shared.stopBackgroundMusic()
+                }
+            }
             .fullScreenCover(isPresented: $showTeam) {
                 TeamView(viewModel: teamVM)
             }
             .fullScreenCover(isPresented: $showGame) {
-                GameView()
+                GameView(teamVM: teamVM)
             }
             .fullScreenCover(isPresented: $showShop) {
                 ShopView(viewModel: shopVM)
