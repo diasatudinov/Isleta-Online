@@ -12,6 +12,8 @@ import SpriteKit
 
 
 struct GameSceneView: UIViewRepresentable {
+    @StateObject var user = User.shared
+    @StateObject var teamVM: TeamViewModel
     @Binding var coinsCount: Int
     @Binding var starsCount: Int
     var delegate: GameSceneDelegate?
@@ -24,6 +26,9 @@ struct GameSceneView: UIViewRepresentable {
         scene.scaleMode = .resizeFill
         scene.gameOverHandler = {
             gameOver = true
+            user.updateUserCoins(for: coinsCount + starsCount)
+            teamVM.addScore(points: coinsCount + starsCount)
+            print("added \(coinsCount + starsCount) coins")
         }
         scene.coinsUpdateHandler = {
             coinsCount += 1

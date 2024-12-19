@@ -11,6 +11,7 @@ import SpriteKit
 
 struct GameView: View {
     @Environment(\.presentationMode) var presentationMode
+    @ObservedObject var teamVM: TeamViewModel
     @State var valueName = "-"
     @State var achivement1 = false
     @State var coinsCount = 0
@@ -26,7 +27,7 @@ struct GameView: View {
     var body: some View {
         GeometryReader { geometry in
             ZStack {
-                GameSceneView(coinsCount: $coinsCount, starsCount: $starsCount, skView: skView, gameScene: gameScene, gameOver: $gameOver).ignoresSafeArea()
+                GameSceneView(teamVM: teamVM, coinsCount: $coinsCount, starsCount: $starsCount, skView: skView, gameScene: gameScene, gameOver: $gameOver).ignoresSafeArea()
                 
                 VStack {
                     ZStack {
@@ -169,5 +170,5 @@ struct GameView: View {
 }
 
 #Preview {
-    GameView()
+    GameView(teamVM: TeamViewModel())
 }
