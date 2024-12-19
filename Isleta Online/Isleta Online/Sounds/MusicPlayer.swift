@@ -1,4 +1,11 @@
-import Foundation
+//
+//  MusicPlayer.swift
+//  Isleta Online
+//
+//  Created by Dias Atudinov on 19.12.2024.
+//
+
+
 import AVFoundation
 
 class MusicPlayer {
@@ -6,19 +13,7 @@ class MusicPlayer {
     var audioPlayer: AVAudioPlayer?
 
     func playBackgroundMusic() {
-        guard let url = Bundle.main.url(forResource: "gameBackground", withExtension: "wav") else { return }
-
-        do {
-            audioPlayer = try AVAudioPlayer(contentsOf: url)
-            audioPlayer?.numberOfLoops = -1 // Infinite loop
-            audioPlayer?.play()
-        } catch {
-            print("Could not play background music: \(error)")
-        }
-    }
-    
-    func playMenuMusic() {
-        guard let url = Bundle.main.url(forResource: "backgroundMusic", withExtension: "mp3") else { return }
+        guard let url = Bundle.main.url(forResource: "gameMusic", withExtension: "mp3") else { return }
 
         do {
             audioPlayer = try AVAudioPlayer(contentsOf: url)

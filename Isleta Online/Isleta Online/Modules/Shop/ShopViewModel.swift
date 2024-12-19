@@ -24,6 +24,12 @@ class ShopViewModel: ObservableObject {
     }
     private let userDefaultsBonusKey = "bonuses"
     
+    func useBonus(name: String) {
+        if let index = bonuses.firstIndex(where: { $0.name.lowercased() == name.lowercased() }) {
+            bonuses[index].purchased = false
+        }
+    }
+    
     func saveBonus() {
         if let encodedData = try? JSONEncoder().encode(bonuses) {
             UserDefaults.standard.set(encodedData, forKey: userDefaultsBonusKey)
