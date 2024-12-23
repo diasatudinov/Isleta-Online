@@ -38,7 +38,7 @@ struct RootView: View {
         }
         .onAppear {
             updateIfNeeded()
-          
+            print("\(Links.shared.finalURL)")
            
         }
     }
